@@ -14,6 +14,8 @@ our $RELEASE           = '1.0';
 our $SHORTDESCRIPTION  = 'Adds github WebHook to accept push notifications';
 our $NO_PREFS_IN_TOPIC = 1;
 
+use constant TRACE => 1;
+
 # Plugin init method, used to initialise handlers
 sub initPlugin {
     Foswiki::Func::registerRESTHandler(
@@ -27,8 +29,10 @@ sub initPlugin {
 
 sub _githubPush {
     my ( $session, $plugin, $verb, $response ) = @_;
+    my $msg;                        # Set to trigger a failure message
+    my $status = 200;
 
-    print STDERR "REST Handler entered\n";
+    print STDERR "REST Handler entered\n" if TRACE;
 
     my $query = $session->{request};
 
@@ -39,7 +43,13 @@ sub _githubPush {
         ($signature) = $sigHead =~ m/^sha1=(.*)$/;
     }
 
-    print STDERR "SIGNATURE: $signature\n";
+    unless ($signature) {
+        _errror( $session, $response, 403,
+'ERROR: (403) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
+        );
+    }
+
+    print STDERR "SIGNATURE: $signature\n" if TRACE;
 
     my $payload = $query->param('POSTDATA');
     my $payloadSig =
@@ -49,13 +59,31 @@ sub _githubPush {
     print STDERR "CALCULATED: $payloadSig ";
 
     unless ( $signature eq $payloadSig ) {
-        print STDERR " ... FAIL:  Signature failed to match \n";
+        _errror( $session, $response, 403,
+'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
+        );
     }
 
     #    use Data::Dumper;
     #    print STDERR Data::Dumper::Dumper( \$query );
 
     return undef;
+}
+
+sub _error {
+
+    # my ($session, $response, $status, $message) = @_;
+
+    $_[1]->header(
+        -type    => 'text/html',
+        -status  => $_[2],
+        -charset => 'UTF-8'
+    );
+
+    $_[1]->print( $_[3] );
+    $_[0]->logger->log( 'warning', $_[3] );
+    throw Foswiki::EngineException( $_[2], $_[3], $_[1] )
+      ;    # status, reason, response
 }
 
 1;
