@@ -1,0 +1,4 @@
+!noci
+data/System/FoswikiOrgPlugin.txt 0644 Documentation page
+lib/Foswiki/Plugins/FoswikiOrgPlugin.pm 0444 Perl module
+lib/Foswiki/Plugins/FoswikiOrgPlugin/Config.spec 0444 Configuration
