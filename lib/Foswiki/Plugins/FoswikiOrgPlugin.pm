@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
+use JSON qw( decode_json );
 
 use Foswiki;
 use Foswiki::Func;
@@ -47,6 +48,7 @@ sub _githubPush {
         _errror( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
         );
+        return;
     }
 
     print STDERR "SIGNATURE: $signature\n" if TRACE;
@@ -56,16 +58,23 @@ sub _githubPush {
       hmac_sha1_hex( $payload,
         $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} );
 
-    print STDERR "CALCULATED: $payloadSig ";
+    print STDERR "CALCULATED: $payloadSig " if TRACE;
 
     unless ( $signature eq $payloadSig ) {
         _errror( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
+        return;
     }
 
-    #    use Data::Dumper;
-    #    print STDERR Data::Dumper::Dumper( \$query );
+    my $payloadRef = decode_json $payload;
+    my $commitsRef = $payloadRef->{'commits'};
+
+    foreach my $commit (@$commitsRef) {
+        print " COMMIT ID: $commit->{'id'} \n";
+        print " MESSAGE:   $commit->{'message'} \n";
+        print " AUTHOR:    $commit->{'author'}{'email'} \n";
+    }
 
     return undef;
 }
@@ -82,8 +91,6 @@ sub _error {
 
     $_[1]->print( $_[3] );
     $_[0]->logger->log( 'warning', $_[3] );
-    throw Foswiki::EngineException( $_[2], $_[3], $_[1] )
-      ;    # status, reason, response
 }
 
 1;
