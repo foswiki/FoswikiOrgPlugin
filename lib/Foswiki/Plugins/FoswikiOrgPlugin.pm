@@ -4,9 +4,6 @@ package Foswiki::Plugins::FoswikiOrgPlugin;
 use strict;
 use warnings;
 
-use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
-use JSON qw( decode_json );
-
 use Foswiki;
 use Foswiki::Func;
 
@@ -15,95 +12,28 @@ our $RELEASE           = '1.0';
 our $SHORTDESCRIPTION  = 'Adds github WebHook to accept push notifications';
 our $NO_PREFS_IN_TOPIC = 1;
 
-use constant TRACE => 1;
-
 # Plugin init method, used to initialise handlers
 sub initPlugin {
     Foswiki::Func::registerRESTHandler(
-        'githubpush', \&_githubPush,
+        'githubpush', \&_RESTgithubpush,
         validate     => 0,  # No strikeone applicable
         authenticate => 0,  # Github push provides a security token for checking
-        http_allow => 'GET,POST'    # Github only will POST.
+        http_allow => 'GET,POST',    # Github only will POST.
+        description =>
+'Handle webhook push requests from GitHub.  Secured by HMAC hash of payload with shared secret.'
     );
     return 1;
 }
 
-sub _githubPush {
-    my ( $session, $plugin, $verb, $response ) = @_;
-    my $msg;                        # Collects the response
-    my $status = 200;
+sub _RESTgithubpush {
 
-    print STDERR "REST Handler entered\n" if TRACE;
+    #my ( $session, $plugin, $verb, $response ) = @_;
 
-    my $query = $session->{request};
+    require Foswiki::Plugins::FoswikiOrgPlugin::Core;
 
-    my $sigHead   = $query->header('X-Hub-Signature');
-    my $signature = '';
+    push @_, $_[0]->{request};    # Add the request object
+    return Foswiki::Plugins::FoswikiOrgPlugin::Core::_githubPush(@_);
 
-    if ($sigHead) {
-        ($signature) = $sigHead =~ m/^sha1=(.*)$/;
-    }
-
-    unless ($signature) {
-        _sendError( $session, $response, 403,
-'ERROR: (403) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
-        );
-        return;
-    }
-
-    print STDERR "SIGNATURE: $signature\n" if TRACE;
-
-    my $payload = $query->param('POSTDATA');
-    my $payloadSig =
-      hmac_sha1_hex( $payload,
-        $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} );
-
-    print STDERR "CALCULATED: $payloadSig " if TRACE;
-
-    unless ( $signature eq $payloadSig ) {
-        _sendError( $session, $response, 403,
-'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
-        );
-        return;
-    }
-
-    my $payloadRef = decode_json $payload;
-    my $commitsRef = $payloadRef->{'commits'};
-
-    foreach my $commit (@$commitsRef) {
-        my @list;
-        my $commitMsg = $commit->{'message'};
-        while ( $commitMsg =~ s/\b(Item\d+)\s*:// ) {
-            push( @list, $1 );
-        }
-
-        next unless scalar @list;
-
-        $msg .= "COMMIT ID: $commit->{'id'}";
-        $msg .= " AUTHOR: $commit->{'author'}{'email'} TASKS: ";
-        $msg .= join( ', ', @list ) . "\n";
-
-    }
-    $response->header(
-        -type    => 'text/plain',
-        -status  => 200,
-        -charset => 'UTF-8'
-    );
-    return $msg;
-}
-
-sub _sendError {
-
-    # my ($session, $response, $status, $message) = @_;
-
-    $_[1]->header(
-        -type    => 'text/plain',
-        -status  => $_[2],
-        -charset => 'UTF-8'
-    );
-
-    $_[1]->print( $_[3] );
-    $_[0]->logger->log( 'warning', $_[3] );
 }
 
 1;
