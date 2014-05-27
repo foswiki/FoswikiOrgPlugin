@@ -50,14 +50,14 @@ sub _githubPush {
     }
 
     my $payloadRef = decode_json $payload;
-    my $commitsRef = $payloadRef->{'commits'};
 
-    my ($branch) = $perl_scalar->{'ref'} =~ m#^.*/.*/(.*)$#;
+    my ($branch) = $payloadRef->{'ref'} =~ m#^.*/.*/(.*)$#;
     $branch ||= 'unknown';
 
     # Check if $branch is one we are tracking
     # If not,  bail out here.
 
+    my $commitsRef = $payloadRef->{'commits'};
     foreach my $commit (@$commitsRef) {
         my @list;
         my $commitMsg = $commit->{'message'};
