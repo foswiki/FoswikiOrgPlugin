@@ -30,7 +30,7 @@ sub initPlugin {
 
 sub _githubPush {
     my ( $session, $plugin, $verb, $response ) = @_;
-    my $msg;                        # Set to trigger a failure message
+    my $msg;                        # Collects the response
     my $status = 200;
 
     print STDERR "REST Handler entered\n" if TRACE;
@@ -71,12 +71,25 @@ sub _githubPush {
     my $commitsRef = $payloadRef->{'commits'};
 
     foreach my $commit (@$commitsRef) {
-        print " COMMIT ID: $commit->{'id'} \n";
-        print " MESSAGE:   $commit->{'message'} \n";
-        print " AUTHOR:    $commit->{'author'}{'email'} \n";
-    }
+        my @list;
+        my $commitMsg = $commit->{'message'};
+        while ( $commitMsg =~ s/\b(Item\d+)\s*:// ) {
+            push( @list, $1 );
+        }
 
-    return undef;
+        next unless scalar @list;
+
+        $msg .= "COMMIT ID: $commit->{'id'}";
+        $msg .= " AUTHOR: $commit->{'author'}{'email'} TASKS: ";
+        $msg .= join( ', ', @list ) . "\n";
+
+    }
+    $response->header(
+        -type    => 'text/plain',
+        -status  => 200,
+        -charset => 'UTF-8'
+    );
+    return $msg;
 }
 
 sub _sendError {
@@ -84,7 +97,7 @@ sub _sendError {
     # my ($session, $response, $status, $message) = @_;
 
     $_[1]->header(
-        -type    => 'text/html',
+        -type    => 'text/plain',
         -status  => $_[2],
         -charset => 'UTF-8'
     );
