@@ -45,7 +45,7 @@ sub _githubPush {
     }
 
     unless ($signature) {
-        _errror( $session, $response, 403,
+        _sendError( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
         );
         return;
@@ -61,7 +61,7 @@ sub _githubPush {
     print STDERR "CALCULATED: $payloadSig " if TRACE;
 
     unless ( $signature eq $payloadSig ) {
-        _errror( $session, $response, 403,
+        _sendError( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
         return;
@@ -79,7 +79,7 @@ sub _githubPush {
     return undef;
 }
 
-sub _error {
+sub _sendError {
 
     # my ($session, $response, $status, $message) = @_;
 
