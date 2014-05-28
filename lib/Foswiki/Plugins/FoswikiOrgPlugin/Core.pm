@@ -77,6 +77,15 @@ sub _githubPush {
         return undef;
     }
 
+    unless ( $payloadRef->{'ref'} ) {
+        _sendResponse( $session, $response, 400,
+'ERROR: (400) Invalid REST invocation: No git \'ref\' found in message, Unable to determine branch. request rejected..'
+        );
+        use Data::Dumper;
+        print STDERR Data::Dumper::Dumper( \$query );
+        return undef;
+    }
+
     my ($branch) = $payloadRef->{'ref'} =~ m#^.*/.*/(.*)$#;
     $branch ||= 'unknown';
 
