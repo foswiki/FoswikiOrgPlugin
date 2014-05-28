@@ -22,20 +22,35 @@ sub _githubPush {
     my $sigHead   = $query->header('X-Hub-Signature');
     my $signature = '';
 
+    unless ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} ) {
+        _sendResponse( $session, $response, 500,
+'ERROR: (500) Invalid configuration: Shared "GithubSecret" is not configured'
+        );
+        return undef;
+    }
+
     if ($sigHead) {
         ($signature) = $sigHead =~ m/^sha1=(.*)$/;
     }
 
     unless ($signature) {
-        _sendError( $session, $response, 403,
-'ERROR: (403) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
+        _sendResponse( $session, $response, 400,
+'ERROR: (400) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
         );
-        return;
+        return undef;
     }
 
     print STDERR "SIGNATURE: $signature\n" if TRACE;
 
     my $payload = $query->param('POSTDATA');
+
+    unless ($payload) {
+        _sendResponse( $session, $response, 400,
+'ERROR: (400) Invalid REST invocation: No POSTDATA found in request. request forbidden'
+        );
+        return undef;
+    }
+
     my $payloadSig =
       hmac_sha1_hex( $payload,
         $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} );
@@ -43,10 +58,12 @@ sub _githubPush {
     print STDERR "CALCULATED: $payloadSig " if TRACE;
 
     unless ( $signature eq $payloadSig ) {
-        _sendError( $session, $response, 403,
+        _sendResponse( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
-        return;
+        use Data::Dumper;
+        print STDERR Data::Dumper::Dumper( \$query );
+        return undef;
     }
 
     my $payloadRef = decode_json $payload;
@@ -58,6 +75,13 @@ sub _githubPush {
     # If not,  bail out here.
 
     my $commitsRef = $payloadRef->{'commits'};
+
+    unless ( defined $commitsRef ) {
+        _sendResponse( $session, $response, 200,
+            'No commits found in this push, ignored.' );
+        return undef;
+    }
+
     foreach my $commit (@$commitsRef) {
         my @list;
         my $commitMsg = $commit->{'message'};
@@ -73,17 +97,12 @@ sub _githubPush {
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
 
     }
-    $response->header(
-        -type    => 'text/plain',
-        -status  => 200,
-        -charset => 'UTF-8'
-    );
+    _sendResponse( $session, $response, 200, $msg );
+    return undef;
 
-    $msg = "No tasks found" unless ($msg);
-    return $msg;
 }
 
-sub _sendError {
+sub _sendResponse {
 
     # my ($session, $response, $status, $message) = @_;
 
