@@ -106,6 +106,8 @@ sub _githubPush {
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
 
     }
+    $msg ||= 'No commits found';
+
     _sendResponse( $session, $response, 200, $msg );
     return undef;
 
