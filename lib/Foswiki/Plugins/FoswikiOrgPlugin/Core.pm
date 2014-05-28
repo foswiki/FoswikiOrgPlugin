@@ -46,7 +46,7 @@ sub _githubPush {
 
     unless ($payload) {
         _sendResponse( $session, $response, 400,
-'ERROR: (400) Invalid REST invocation: No POSTDATA found in request. request forbidden'
+'ERROR: (400) Invalid REST invocation: No POSTDATA found in request. request rejected'
         );
         return undef;
     }
@@ -67,6 +67,15 @@ sub _githubPush {
     }
 
     my $payloadRef = decode_json $payload;
+
+    unless ($payloadRef) {
+        _sendResponse( $session, $response, 400,
+'ERROR: (400) Invalid REST invocation: Unable to decode JSON from the POSTDATA, request rejected.'
+        );
+        use Data::Dumper;
+        print STDERR Data::Dumper::Dumper( \$query );
+        return undef;
+    }
 
     my ($branch) = $payloadRef->{'ref'} =~ m#^.*/.*/(.*)$#;
     $branch ||= 'unknown';
