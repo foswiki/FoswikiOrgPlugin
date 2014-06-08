@@ -4,20 +4,20 @@ package Foswiki::Plugins::FoswikiOrgPlugin::Core;
 use strict;
 use warnings;
 
+use Foswiki::Plugins::FoswikiOrgPlugin;
+
 use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
 use JSON qw( decode_json );
 
 use Foswiki;
 use Foswiki::Func;
 
-use constant TRACE => 1;
-
 sub _githubPush {
     my ( $session, $plugin, $verb, $response, $query ) = @_;
     my $msg;    # Collects the response
     my $status = 200;
 
-    print STDERR "REST Handler CORE entered\n" if TRACE;
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("REST Handler CORE entered");
 
     my $sigHead   = $query->header('X-Hub-Signature');
     my $signature = '';
@@ -40,7 +40,7 @@ sub _githubPush {
         return undef;
     }
 
-    print STDERR "SIGNATURE: $signature\n" if TRACE;
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("SIGNATURE: $signature");
 
     my $payload = $query->param('POSTDATA');
 
@@ -55,14 +55,15 @@ sub _githubPush {
       hmac_sha1_hex( $payload,
         $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} );
 
-    print STDERR "CALCULATED: $payloadSig " if TRACE;
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("CALCULATED: $payloadSig ");
 
     unless ( $signature eq $payloadSig ) {
         _sendResponse( $session, $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
         use Data::Dumper;
-        print STDERR Data::Dumper::Dumper( \$query );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            Data::Dumper::Dumper( \$query ) );
         return undef;
     }
 
@@ -73,7 +74,8 @@ sub _githubPush {
 'ERROR: (400) Invalid REST invocation: Unable to decode JSON from the POSTDATA, request rejected.'
         );
         use Data::Dumper;
-        print STDERR Data::Dumper::Dumper( \$query );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            Data::Dumper::Dumper( \$query ) );
         return undef;
     }
 
@@ -82,7 +84,8 @@ sub _githubPush {
 'ERROR: (400) Invalid REST invocation: No git \'ref\' found in message, Unable to determine branch. request rejected..'
         );
         use Data::Dumper;
-        print STDERR Data::Dumper::Dumper( \$query );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            Data::Dumper::Dumper( \$query ) );
         return undef;
     }
 
