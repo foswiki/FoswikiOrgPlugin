@@ -136,7 +136,115 @@ sub _sendResponse {
     );
 
     $_[1]->print( $_[3] );
-    $_[0]->logger->log( 'warning', $_[3] );
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug( $_[3] );
+}
+
+sub _beforeSaveHandler {
+    my ( $text, $topic, $web, $meta ) = @_;
+
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+        "called beforeSaveHandler($web, $topic)");
+
+#  Read the Priority, ReportedBy and WaitingFor fields from the form
+#  %META:FIELD{name="CurrentState" attributes="M" title="CurrentState" value="Being Worked On"}%
+#  %META:FIELD{name="Priority" attributes="M" title="[[Priority]]" value="Normal"}%
+#  %META:FIELD{name="ReportedBy" attributes="M" title="ReportedBy" value="Main.OlivierRaginel"}%
+#  %META:FIELD{name="WaitingFor" attributes="" title="WaitingFor" value="Main.OlivierRaginel, GeorgeClark"}%
+
+    # Load the old topic prior to edit to examine the security controls
+    my $oldMeta =
+      Foswiki::Meta->load( $Foswiki::Plugins::SESSION, $web, $topic );
+
+    my $securedTopic = 0;
+    my $oldPriority;
+    my $oldState;
+
+    my $fieldData = $oldMeta->get( 'FIELD', 'Priority' );
+    if ( defined $fieldData ) {
+        $oldPriority = $fieldData->{'value'};
+    }
+
+    $fieldData = $oldMeta->get( 'FIELD', 'CurrentState' );
+    if ( defined $fieldData ) {
+        $oldState = $fieldData->{'value'};
+    }
+
+    if (   $oldPriority eq 'Security'
+        && $oldState ne 'Closed'
+        && $oldState ne 'No Action Required' )
+    {
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Topic was secured by task state");
+        $securedTopic = 1;
+    }
+
+    # get rid of old meta,  we don't need it any further.
+    $oldMeta->finish();
+
+    my $taskPriority;
+    my $reportedBy;
+    my $waitingFor;
+    my $currentState;
+
+    $fieldData = $meta->get( 'FIELD', 'Priority' );
+    if ( defined $fieldData ) {
+        $taskPriority = $fieldData->{'value'};
+    }
+
+    $fieldData = $meta->get( 'FIELD', 'ReportedBy' );
+    if ( defined $fieldData ) {
+        $reportedBy = $fieldData->{'value'};
+    }
+
+    $fieldData = $meta->get( 'FIELD', 'WaitingFor' );
+    if ( defined $fieldData ) {
+        $waitingFor = $fieldData->{'value'};
+    }
+
+    $fieldData = $meta->get( 'FIELD', 'CurrentState' );
+    if ( defined $fieldData ) {
+        $currentState = $fieldData->{'value'};
+    }
+
+    if (   $taskPriority eq 'Security'
+        && $currentState ne 'Closed'
+        && $currentState ne 'No Action Required' )
+    {
+
+        my @users;
+
+        push( @users,
+                $Foswiki::cfg{UsersWebName} . '.'
+              . $Foswiki::cfg{SuperAdminGroup} );
+        push( @users, split( ',', $reportedBy ) );
+        push( @users, split( ',', $waitingFor ) );
+
+# SMELL:  It would be nice to actually validate that the the listed users are actually real users
+# but trunk.foswiki.org doesn't have a user database avaiable. So we just take what we have.
+
+        $meta->putKeyed(
+            'PREFERENCE',
+            {
+                name  => 'ALLOWTOPICVIEW',
+                title => 'ALLOWTOPICVIEW',
+                type  => 'Set',
+                value => join( ', ', @users ),
+            }
+        );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Security preference set based upon Task state.");
+
+    }
+
+# Only remove the access control if the topic was previously secured by automatic controls.
+    elsif ($securedTopic) {
+        $meta->remove( 'PREFERENCE', 'ALLOWTOPICVIEW' );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Security preference removed based upon Task state.");
+    }
+
+    return;
+
 }
 
 1;
