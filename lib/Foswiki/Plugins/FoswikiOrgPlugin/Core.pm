@@ -95,8 +95,10 @@ sub _githubPush {
     # Check if $branch is one we are tracking
     # If not,  bail out here.
 
-    my $commitsRef = $payloadRef->{'commits'};
+    my $repoRef    = $payloadRef->{'repository'};
+    my $repository = $repoRef->{'name'};
 
+    my $commitsRef = $payloadRef->{'commits'};
     unless ( defined $commitsRef ) {
         _sendResponse( $session, $response, 200,
             'No commits found in this push, ignored.' );
@@ -114,6 +116,7 @@ sub _githubPush {
 
         $msg .= "COMMIT ID: $commit->{'id'}";
         $msg .= " Author: $commit->{'author'}{'email'} ";
+        $msg .= " Repository: $repository ";
         $msg .= " Branch: $branch ";
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
 
