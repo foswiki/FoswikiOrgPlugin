@@ -210,14 +210,6 @@ sub _logCommit {
 
     my $log = File::Spec->catfile( $workPath, $repo );
 
-    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("log called: $log ");
-
-    $log = Foswiki::Sandbox::untaint( $log,
-        \&Foswiki::Sandbox::validateAttachmentName );
-    $log ||= 'invalidRepo';
-
-    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("log after untaint: $log ");
-
     if ( open( my $file, '>>', $log ) ) {
         binmode $file, ":encoding(utf-8)";
         _lock($file);
@@ -225,7 +217,8 @@ sub _logCommit {
         close($file);
     }
     else {
-        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("log open failed:  $! ");
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "log open $log failed:  $! ");
     }
 }
 
