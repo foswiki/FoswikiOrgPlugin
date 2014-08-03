@@ -150,8 +150,10 @@ sub _githubPush {
         next unless scalar @list;
 
         $msg .= "COMMIT ID: $commit->{'id'}";
-        $msg .= " Author: $commit->{'author'}{'username'} ";
-        $msg .= " Committer: $commit->{'committer'}{'username'} ";
+        $msg .= " Author: " . $commit->{'author'}{'username'}
+          || $commit->{'author'}{'name'};
+        $msg .= " Committer: " . $commit->{'committer'}{'username'}
+          || $commit->{'committer'}{'name'};
         $msg .= " Repository: $repository ";
         $msg .= " Branch: $branch ";
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
@@ -201,7 +203,12 @@ sub _logCommit {
       . join( ',', @$tasklist ) . " |\n";
 
     my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
-    my $log = File::Spec->catfile( $workPath, $repository );
+
+    my $repo = Foswiki::Sandbox::untaint( $repository,
+        \&Foswiki::Sandbox::validateAttachmentName );
+    $repo ||= 'invalidRepo';
+
+    my $log = File::Spec->catfile( $workPath, $repo );
 
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("log called: $log ");
 
