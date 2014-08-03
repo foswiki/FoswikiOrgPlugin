@@ -14,6 +14,7 @@ use File::Spec;
 use Foswiki;
 use Foswiki::Func;
 use Foswiki::Sandbox;
+use Foswiki::Time;
 
 sub _githubPush {
     my ( $session, $plugin, $verb, $response, $query ) = @_;
@@ -200,9 +201,9 @@ sub _logCommit {
     my $commit     = shift;
     my $tasklist   = shift;
 
-    my $now = Foswiki::Time::formatTime( time(), 'servertime' );
+    my $now = Foswiki::Time::formatTime( time(), 'iso', 'gmtime' );
     my $message = "| $now | $delivery | $branch | $commit | "
-      . join( ',', @$tasklist ) . " |\n";
+      . join( ',', @$tasklist ) . " |";
 
     my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
 
