@@ -13,6 +13,7 @@ use File::Spec;
 
 use Foswiki;
 use Foswiki::Func;
+use Foswiki::Sandbox;
 
 sub _githubPush {
     my ( $session, $plugin, $verb, $response, $query ) = @_;
@@ -201,6 +202,10 @@ sub _logCommit {
 
     my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
     my $log = File::Spec->catfile( $workPath, $repository );
+
+    $log = Foswiki::Sandbox::untaint( $log,
+        \&Foswiki::Sandbox::validateAttachmentName );
+    $log ||= 'invalidRepo';
 
     if ( open( my $file, '>>', $log ) ) {
         binmode $file, ":encoding(utf-8)";
