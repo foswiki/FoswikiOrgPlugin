@@ -8,6 +8,8 @@ use Foswiki::Plugins::FoswikiOrgPlugin;
 
 use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
 use JSON qw( decode_json );
+use Fcntl qw(:flock);
+use File::Spec;
 
 use Foswiki;
 use Foswiki::Func;
@@ -18,6 +20,8 @@ sub _githubPush {
     my $status = 200;
 
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("REST Handler CORE entered");
+
+    # Extract out the signature for later validation of the payload
 
     my $sigHead   = $query->header('X-Hub-Signature');
     my $signature = '';
@@ -42,6 +46,14 @@ sub _githubPush {
 
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("SIGNATURE: $signature");
 
+    # Get the delivery ID for debugging / tracking
+
+    my $delivery = $query->header('X-GitHub-Delivery');
+    $delivery ||= 'No delivery id';
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("Delivery ID:: $delivery ");
+
+    # Get the payload for processing
+
     my $payload = $query->param('POSTDATA');
 
     unless ($payload) {
@@ -50,6 +62,9 @@ sub _githubPush {
         );
         return undef;
     }
+
+    # Verify the signature.  Calculate a hmac_sha1 of the payload and secret.
+    # It should match the signature in the headers.
 
     my $payloadSig =
       hmac_sha1_hex( $payload,
@@ -66,6 +81,8 @@ sub _githubPush {
             Data::Dumper::Dumper( \$query ) );
         return undef;
     }
+
+    # Decode the JSON and do basic validations
 
     my $payloadRef = decode_json $payload;
 
@@ -89,17 +106,32 @@ sub _githubPush {
         return undef;
     }
 
+    # Parse out the branch name.
+
     my ($branch) = $payloadRef->{'ref'} =~ m#^.*/.*/(.*)$#;
     $branch ||= 'unknown';
 
     # Check if $branch is one we are tracking
     # If not,  bail out here.
 
+    unless ( $branch =~
+        m/$Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TrackingBranches}/ )
+    {
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+"Ignoring commit against $branch does not match $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TrackingBranches}"
+        );
+        _sendResponse( $session, $response, 200,
+            "Commits against branch $branch are not being tracked" );
+        return undef;
+    }
+
     my $repoRef    = $payloadRef->{'repository'};
     my $repository = $repoRef->{'name'};
 
     my $commitsRef = $payloadRef->{'commits'};
     unless ( defined $commitsRef ) {
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "No commits found in Delivery ID: $delivery");
         _sendResponse( $session, $response, 200,
             'No commits found in this push, ignored.' );
         return undef;
@@ -112,15 +144,19 @@ sub _githubPush {
             push( @list, $1 );
         }
 
+        _logCommit( $delivery, $repository, $branch, $commit, \@list );
+
         next unless scalar @list;
 
         $msg .= "COMMIT ID: $commit->{'id'}";
-        $msg .= " Author: $commit->{'author'}{'email'} ";
+        $msg .= " Author: $commit->{'author'}{'username'} ";
+        $msg .= " Committer: $commit->{'committer'}{'username'} ";
         $msg .= " Repository: $repository ";
         $msg .= " Branch: $branch ";
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
 
     }
+
     $msg ||= 'No commits found';
 
     _sendResponse( $session, $response, 200, $msg );
@@ -140,6 +176,46 @@ sub _sendResponse {
 
     $_[1]->print( $_[3] );
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug( $_[3] );
+}
+
+=tml
+
+---+++ _logCommit
+
+Gets a workarea and appends a record of the commit to a logfile of the repository name.
+We might use this to trigger offline processing such as scheduling
+git pull events for a local repository.
+
+=cut
+
+sub _logCommit {
+    my $delivery   = shift;
+    my $repository = shift;
+    my $branch     = shift;
+    my $commit     = shift;
+    my $tasklist   = shift;
+
+    my $now = Foswiki::Time::formatTime( time(), 'servertime' );
+    my $message = "| $now | $delivery | $branch | $commit | "
+      . join( ',', @$tasklist ) . " |\n";
+
+    my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
+    my $log = File::Spec->catfile( $workPath, $repository );
+
+    if ( open( my $file, '>>', $log ) ) {
+        binmode $file, ":encoding(utf-8)";
+        _lock($file);
+        print $file "$message\n";
+        close($file);
+    }
+}
+
+sub _lock {    # borrowed from Log::Dispatch::FileRotate, Thanks!
+    my $fh = shift;
+    eval { flock( $fh, LOCK_EX ) }; # Ignore lock errors,   not all platforms support flock
+                                    # Make sure we are at the EOF
+    seek( $fh, 0, 2 );
+    return 1;
 }
 
 sub _beforeSaveHandler {
