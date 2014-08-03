@@ -150,10 +150,12 @@ sub _githubPush {
         next unless scalar @list;
 
         $msg .= "COMMIT ID: $commit->{'id'}";
-        $msg .= " Author: " . $commit->{'author'}{'username'}
-          || $commit->{'author'}{'name'};
-        $msg .= " Committer: " . $commit->{'committer'}{'username'}
-          || $commit->{'committer'}{'name'};
+        $msg .= " Author: "
+          . ( $commit->{'author'}{'username'} || $commit->{'author'}{'name'} );
+        $msg .=
+          " Committer: "
+          . (    $commit->{'committer'}{'username'}
+              || $commit->{'committer'}{'name'} );
         $msg .= " Repository: $repository ";
         $msg .= " Branch: $branch ";
         $msg .= " Tasks: " . join( ', ', @list ) . "\n";
