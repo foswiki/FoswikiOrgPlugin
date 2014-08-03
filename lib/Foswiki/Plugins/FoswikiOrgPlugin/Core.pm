@@ -13,6 +13,7 @@ use File::Spec;
 
 use Foswiki;
 use Foswiki::Func;
+use Foswiki::Meta;
 use Foswiki::Sandbox;
 use Foswiki::Time;
 
@@ -202,7 +203,7 @@ sub _logCommit {
     my $tasklist   = shift;
 
     my $now = Foswiki::Time::formatTime( time(), 'iso', 'gmtime' );
-    my $message = "| $now | $delivery | $branch | $commit | "
+    my $message = "| $now | $delivery | $branch | $commit->{'id'} | "
       . join( ',', @$tasklist ) . " |";
 
     my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
