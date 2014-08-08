@@ -99,6 +99,14 @@ sub _githubPush {
         return undef;
     }
 
+    if (   $payloadRef->{'zen'}
+        && $payloadRef->{'zen'} eq "Speak like a human."
+        && $payloadRef->{'hook'} )
+    {
+        _sendResponse( $session, $response, 200, 'PING Received!' );
+        return undef;
+    }
+
     unless ( $payloadRef->{'ref'} ) {
         _sendResponse( $session, $response, 400,
 'ERROR: (400) Invalid REST invocation: No git \'ref\' found in message, Unable to determine branch. request rejected..'
