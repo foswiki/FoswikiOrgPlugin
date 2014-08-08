@@ -100,8 +100,8 @@ sub _githubPush {
     }
 
     if (   $payloadRef->{'zen'}
-        && $payloadRef->{'zen'} eq "Speak like a human."
-        && $payloadRef->{'hook'} )
+        && $payloadRef->{'hook'}
+        && !$payloadRef->{'ref'} )
     {
         _sendResponse( $session, $response, 200, 'PING Received!' );
         return undef;
