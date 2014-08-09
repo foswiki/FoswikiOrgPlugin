@@ -211,14 +211,14 @@ sub _logCommit {
     my $commit     = shift;
     my $tasklist   = shift;
 
-    my $workpath;
+    my $workPath;
     my $now = Foswiki::Time::formatTime( time(), 'iso', 'gmtime' );
     my $message = "| $now | $delivery | $branch | $commit->{'id'} | "
       . join( ',', @$tasklist ) . " |";
 
     if ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea} ) {
-        $workpath = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea};
-        File::Path::make_path($workpath) unless ( -d $workpath );
+        $workPath = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea};
+        File::Path::make_path($workPath) unless ( -d $workPath );
     }
     else {
         $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
