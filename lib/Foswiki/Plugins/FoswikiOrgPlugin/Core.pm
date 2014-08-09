@@ -10,6 +10,7 @@ use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
 use JSON qw( decode_json );
 use Fcntl qw(:flock);
 use File::Spec;
+use File::Path qw/make_path/;
 
 use Foswiki;
 use Foswiki::Func;
@@ -210,11 +211,18 @@ sub _logCommit {
     my $commit     = shift;
     my $tasklist   = shift;
 
+    my $workpath;
     my $now = Foswiki::Time::formatTime( time(), 'iso', 'gmtime' );
     my $message = "| $now | $delivery | $branch | $commit->{'id'} | "
       . join( ',', @$tasklist ) . " |";
 
-    my $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
+    if ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea} ) {
+        $workpath = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea};
+        File::Path::make_path($workpath) unless ( -d $workpath );
+    }
+    else {
+        $workPath = Foswiki::Func::getWorkArea('FoswikiOrgPlugin');
+    }
 
     my $repo = Foswiki::Sandbox::untaint( $repository,
         \&Foswiki::Sandbox::validateAttachmentName );
