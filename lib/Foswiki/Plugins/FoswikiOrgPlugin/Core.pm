@@ -154,6 +154,8 @@ sub _githubPush {
         my $commitMsg = $commit->{'message'};
         while ( $commitMsg =~ s/\b(Item\d+)\s*:// ) {
             push( @list, $1 );
+            _updateTask( $repository, $branch, $commit->{'id'}, $1 )
+              if ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{UpdateTasks} );
         }
 
         _logCommit( $delivery, $repository, $branch, $commit, \@list );
@@ -192,6 +194,58 @@ sub _sendResponse {
 
     $_[1]->print( $_[3] );
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug( $_[3] );
+}
+
+=tml
+
+---+++ _updateTask
+
+Applies the commit to the data form entry in the task.
+
+=cut
+
+sub _updateTask {
+    my $repository = shift;
+    my $branch     = shift;
+    my $commitID   = shift;
+    my $taskItem   = shift;
+
+    unless (
+        Foswiki::Func::topicExists(
+            $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}, $taskItem
+        )
+      )
+    {
+        print STDERR "- FoswikiOrgPlugin - $taskItem not found\n";
+        Foswiki::Func::writeDebug("- FoswikiOrgPlugin - $taskItem not found");
+        return undef;
+    }
+
+    # No need to check access permission,  Github key required for access
+
+    my ( $meta, undef ) = Foswiki::Func::readTopic(
+        $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}, $taskItem );
+
+    foreach my $field ( 'Checkins', "${branch}Checkins" ) {
+        my $formField = $meta->get( 'FIELD', $field );
+        my $value;
+        $value = $formField->{'value'} if ( defined $formField );
+        $value .= ' ' if $value;
+        $value .= "%GITREF{$repository:$commitID}%";
+        $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
+    }
+    my $formField = $meta->get( 'FIELD', 'CheckinsOnBranches' );
+    my $value;
+    $value = $formField->{'value'} if ( defined $formField );
+    unless ( $value =~ m/\b$branch\b/ ) {
+        $value .= ' ' if $value;
+        $value .= $branch;
+        $meta->putKeyed( 'FIELD',
+            { name => 'CheckinsOnBranches', value => $value } );
+    }
+
+    $meta->save();
+    return;
 }
 
 =tml
@@ -262,40 +316,44 @@ sub _beforeSaveHandler {
 #  %META:FIELD{name="ReportedBy" attributes="M" title="ReportedBy" value="Main.OlivierRaginel"}%
 #  %META:FIELD{name="WaitingFor" attributes="" title="WaitingFor" value="Main.OlivierRaginel, GeorgeClark"}%
 
-    # Load the old topic prior to edit to examine the security controls
-    my $oldMeta =
-      Foswiki::Meta->load( $Foswiki::Plugins::SESSION, $web, $topic );
-
     my $securedTopic = 0;
-    my $oldPriority;
-    my $oldState;
+    my $oldPriority  = '';
+    my $oldState     = '';
+    my $fieldData;
 
-    my $fieldData = $oldMeta->get( 'FIELD', 'Priority' );
-    if ( defined $fieldData ) {
-        $oldPriority = $fieldData->{'value'};
+    if ( Foswiki::Func::topicExists( $web, $topic ) ) {
+
+        # Load the old topic prior to edit to examine the security controls
+        my $oldMeta =
+          Foswiki::Meta->load( $Foswiki::Plugins::SESSION, $web, $topic );
+
+        $fieldData = $oldMeta->get( 'FIELD', 'Priority' );
+        if ( defined $fieldData ) {
+            $oldPriority = $fieldData->{'value'};
+        }
+
+        $fieldData = $oldMeta->get( 'FIELD', 'CurrentState' );
+        if ( defined $fieldData ) {
+            $oldState = $fieldData->{'value'};
+        }
+
+        if (   $oldPriority eq 'Security'
+            && $oldState ne 'Closed'
+            && $oldState ne 'No Action Required' )
+        {
+            Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+                "Topic was secured by task state");
+            $securedTopic = 1;
+        }
+
+        # get rid of old meta,  we don't need it any further.
+        $oldMeta->finish();
     }
 
-    $fieldData = $oldMeta->get( 'FIELD', 'CurrentState' );
-    if ( defined $fieldData ) {
-        $oldState = $fieldData->{'value'};
-    }
-
-    if (   $oldPriority eq 'Security'
-        && $oldState ne 'Closed'
-        && $oldState ne 'No Action Required' )
-    {
-        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-            "Topic was secured by task state");
-        $securedTopic = 1;
-    }
-
-    # get rid of old meta,  we don't need it any further.
-    $oldMeta->finish();
-
-    my $taskPriority;
-    my $reportedBy;
-    my $waitingFor;
-    my $currentState;
+    my $taskPriority = '';
+    my $reportedBy   = '';
+    my $waitingFor   = '';
+    my $currentState = '';
 
     $fieldData = $meta->get( 'FIELD', 'Priority' );
     if ( defined $fieldData ) {
@@ -326,7 +384,7 @@ sub _beforeSaveHandler {
 
         push( @users,
                 $Foswiki::cfg{UsersWebName} . '.'
-              . $Foswiki::cfg{SuperAdminGroup} );
+              . $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{SecurityGroup} );
         push( @users, split( ',', $reportedBy ) );
         push( @users, split( ',', $waitingFor ) );
 

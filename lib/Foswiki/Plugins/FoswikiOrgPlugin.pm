@@ -43,7 +43,6 @@ sub writeDebug {
     return unless TRACE;
     print STDERR "- FoswikiOrgPlugin - " . $_[0] . "\n";
 
-    #Foswiki::Func::writeDebug("- NatEditPlugin - $_[0]");
 }
 
 ###############################################################################
@@ -56,7 +55,9 @@ sub beforeSaveHandler {
     my ( $text, $topic, $web, $meta ) = @_;
 
     # Only active in the Tasks web on Item* topics
-    return unless ( substr( $topic, 0, 4 ) eq 'Item' && $web eq 'Tasks' );
+    return
+      unless ( substr( $topic, 0, 4 ) eq 'Item'
+        && $web eq $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb} );
 
     require Foswiki::Plugins::FoswikiOrgPlugin::Core;
     Foswiki::Plugins::FoswikiOrgPlugin::Core::_beforeSaveHandler(@_);
