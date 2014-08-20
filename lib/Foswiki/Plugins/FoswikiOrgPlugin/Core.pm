@@ -210,6 +210,8 @@ sub _updateTask {
     my $commitID   = shift;
     my $taskItem   = shift;
 
+    $commitID = substr( $commitID, 0, 12 );
+
     unless (
         Foswiki::Func::topicExists(
             $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}, $taskItem
