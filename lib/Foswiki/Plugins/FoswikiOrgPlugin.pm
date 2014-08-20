@@ -16,14 +16,28 @@ our $NO_PREFS_IN_TOPIC = 1;
 
 # Plugin init method, used to initialise handlers
 sub initPlugin {
-    Foswiki::Func::registerRESTHandler(
-        'githubpush', \&_RESTgithubpush,
-        validate     => 0,  # No strikeone applicable
-        authenticate => 0,  # Github push provides a security token for checking
-        http_allow => 'GET,POST',    # Github only will POST.
-        description =>
+
+    # check for Plugins.pm versions, don't register REST handler
+    # on older versions of Foswiki.
+    if ( $Foswiki::Plugins::VERSION < 2.3 ) {
+        Foswiki::Func::writeWarning(
+            'Version mismatch between ',
+            __PACKAGE__,
+            ' and Plugins.pm, skipping REST Handler'
+        );
+    }
+    else {
+        Foswiki::Func::registerRESTHandler(
+            'githubpush', \&_RESTgithubpush,
+            validate => 0,    # No strikeone applicable
+            authenticate =>
+              0,    # Github push provides a security token for checking
+            http_allow => 'POST',    # Github only will POST.
+            description =>
 'Handle webhook push requests from GitHub.  Secured by HMAC hash of payload with shared secret.'
-    );
+        );
+    }
+
     return 1;
 }
 
