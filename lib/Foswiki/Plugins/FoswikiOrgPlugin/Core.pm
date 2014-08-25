@@ -319,7 +319,7 @@ sub _updateTask {
       )
     {
         print STDERR "- FoswikiOrgPlugin - $taskItem not found\n";
-        Foswiki::Func::writeDebug("- FoswikiOrgPlugin - $taskItem not found");
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("$taskItem not found");
         return undef;
     }
 
@@ -335,6 +335,8 @@ sub _updateTask {
         $value = $formField->{'value'} if ( defined $formField );
         unless ( $value && $value =~ m/\Q%GITREF{$repository:$commitID}%\E/ ) {
             $changed = 1;
+            Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+                "Added $commitID to $field for $taskItem");
             $value .= ' ' if $value;
             $value .= "%GITREF{$repository:$commitID}%";
             $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
@@ -345,6 +347,8 @@ sub _updateTask {
     $value = $formField->{'value'} if ( defined $formField );
     unless ( $value =~ m/\b\Q$branch\E\b/ ) {
         $changed = 1;
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Added $branch to CheckinsOnBranches for $taskItem");
         $value .= ' ' if $value;
         $value .= $branch;
         $meta->putKeyed( 'FIELD',
@@ -356,7 +360,9 @@ sub _updateTask {
              _findcUID( $commit->{'author'} )
           || _findcUID( $commit->{'committer'} )
           || 'ProjectContributor';
-        $meta->save( author => $cUID );
+        my $newRev = $meta->save( author => $cUID );
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Saved r$newRev of $taskItem");
     }
     return;
 }
