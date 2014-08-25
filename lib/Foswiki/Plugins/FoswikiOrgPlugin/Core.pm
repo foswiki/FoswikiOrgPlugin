@@ -20,7 +20,6 @@ use Foswiki::Time;
 
 sub _githubPush {
     my ( $session, $plugin, $verb, $response, $query ) = @_;
-    my $msg;    # Collects the response
     my $status = 200;
 
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("REST Handler CORE entered");
@@ -31,7 +30,7 @@ sub _githubPush {
     my $signature = '';
 
     unless ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} ) {
-        _sendResponse( $session, $response, 500,
+        _sendResponse( $response, 500,
 'ERROR: (500) Invalid configuration: Shared "GithubSecret" is not configured'
         );
         return undef;
@@ -42,7 +41,7 @@ sub _githubPush {
     }
 
     unless ($signature) {
-        _sendResponse( $session, $response, 400,
+        _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: X-Hub-Signature header missing or incorrect, request forbidden'
         );
         return undef;
@@ -61,7 +60,7 @@ sub _githubPush {
     my $payload = $query->param('POSTDATA');
 
     unless ($payload) {
-        _sendResponse( $session, $response, 400,
+        _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: No POSTDATA found in request. request rejected'
         );
         return undef;
@@ -77,7 +76,7 @@ sub _githubPush {
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug("CALCULATED: $payloadSig ");
 
     unless ( $signature eq $payloadSig ) {
-        _sendResponse( $session, $response, 403,
+        _sendResponse( $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
         use Data::Dumper;
@@ -86,12 +85,20 @@ sub _githubPush {
         return undef;
     }
 
+    return _processValidatedPayload( $session, $response, $query, $payload )
+
+}
+
+sub _processValidatedPayload {
+    my ( $session, $response, $query, $payload ) = @_;
+    my $msg;    # Collects the response
+
     # Decode the JSON and do basic validations
 
     my $payloadRef = decode_json $payload;
 
     unless ($payloadRef) {
-        _sendResponse( $session, $response, 400,
+        _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: Unable to decode JSON from the POSTDATA, request rejected.'
         );
         use Data::Dumper;
@@ -104,12 +111,12 @@ sub _githubPush {
         && $payloadRef->{'hook'}
         && !$payloadRef->{'ref'} )
     {
-        _sendResponse( $session, $response, 200, 'PING Received!' );
+        _sendResponse( $response, 200, 'PING Received!' );
         return undef;
     }
 
     unless ( $payloadRef->{'ref'} ) {
-        _sendResponse( $session, $response, 400,
+        _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: No git \'ref\' found in message, Unable to determine branch. request rejected..'
         );
         use Data::Dumper;
@@ -132,7 +139,7 @@ sub _githubPush {
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
 "Ignoring commit against $branch does not match $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TrackingBranches}"
         );
-        _sendResponse( $session, $response, 200,
+        _sendResponse( $response, 200,
             "Commits against branch $branch are not being tracked" );
         return undef;
     }
@@ -142,9 +149,7 @@ sub _githubPush {
 
     my $commitsRef = $payloadRef->{'commits'};
     unless ( defined $commitsRef ) {
-        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-            "No commits found in Delivery ID: $delivery");
-        _sendResponse( $session, $response, 200,
+        _sendResponse( $response, 200,
             'No commits found in this push, ignored.' );
         return undef;
     }
@@ -152,13 +157,14 @@ sub _githubPush {
     foreach my $commit (@$commitsRef) {
         my @list;
         my $commitMsg = $commit->{'message'};
+
         while ( $commitMsg =~ s/\b(Item\d+)\s*:// ) {
             push( @list, $1 );
-            _updateTask( $repository, $branch, $commit->{'id'}, $1 )
+            _updateTask( $repository, $branch, $commit, $1 )
               if ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{UpdateTasks} );
         }
 
-        _logCommit( $delivery, $repository, $branch, $commit, \@list );
+        _logCommit( $repository, $branch, $commit, \@list );
 
         next unless scalar @list;
 
@@ -177,23 +183,117 @@ sub _githubPush {
 
     $msg ||= 'No commits found';
 
-    _sendResponse( $session, $response, 200, $msg );
+    _sendResponse( $response, 200, $msg );
     return undef;
 
 }
 
 sub _sendResponse {
 
-    # my ($session, $response, $status, $message) = @_;
+    # my ( $response, $status, $message) = @_;
+    # Unit tests doesn't pass in a $response
 
-    $_[1]->header(
-        -type    => 'text/plain',
-        -status  => $_[2],
-        -charset => 'UTF-8'
-    );
+    if ( defined $_[0] ) {
+        $_[0]->header(
+            -type    => 'text/plain',
+            -status  => $_[1],
+            -charset => 'UTF-8'
+        );
+        $_[0]->print( $_[2] );
+    }
+    else {
+        print STDERR $_[2] . "\n";
+    }
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug( $_[2] );
+}
 
-    $_[1]->print( $_[3] );
-    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug( $_[3] );
+=tml
+
+---+++ _findcUID( $userHash ) -> $cUID
+
+Examines the "Author" or "Committer" hash from a github commit notification.
+Three fields are available.   github userid, email address,  and user name.
+
+Email address is probably the most secure, so if wikiname(s) are found for the
+commit email, use it.  If more than one,  see if the User Name can morph to match
+one of the names.  This is probably not necessary since we don't permit email address
+reuse, but historically there are some out there.
+
+If no email address match is found,  see if a "wikified" user name matches.
+
+Return undef if nothing found.
+
+=cut
+
+sub _findcUID {
+
+    # my $userHash = shift;
+    # $_[0]->{email}        # github email address
+    # $_[0]->{username}     # github userid
+    # $_[0]->{name}         # Full name used github registration
+
+    my $cUID;
+    my @wikiNames;
+
+    if ( defined $_[0]->{email} ) {
+        @wikiNames = Foswiki::Func::emailToWikiNames( $_[0]->{email}, 1 );
+
+        if ( scalar @wikiNames == 1 ) {
+
+            # Single match - good
+            Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+                "Found single $wikiNames[0] for $_[0]->{email} ");
+
+# SMELL: We should really use Func::getCanonicalUserID,  but it always returns an ID,
+# And we don't want to default to the logged in (ie guest) user if this fails.
+            return $Foswiki::Plugins::SESSION->{users}
+              ->getCanonicalUserID( $wikiNames[0] );
+        }
+    }
+
+# Either no email was defined (unlikely)  or it doesn't match up with an existing user registration
+# Or we found multiple possible wikinames.  Check if the full name matches a registered wikiname.
+
+    # {name} is the full name the user registered with on github.com
+    # Make it into a wikiword.
+
+    my $tryName = $_[0]->{name} || '';
+    $tryName =~ s/\s//g;    # Remove any white space
+    unless ( Foswiki::Func::isValidWikiWord($tryName) ) {
+
+        # The simple transform didn't work,
+        # Split on spaces and make sure each part begins with Upper.
+
+        $tryName = '';
+        my @nameParts = split( /\s/, ( $_[0]->{name} || '' ) );
+        foreach my $part (@nameParts) {
+            $part = ucfirst($part);
+            $tryName .= $part;
+        }
+    }
+
+    # Try to match one of the WikiNames with the github user name
+    if ( scalar @wikiNames ) {
+        foreach my $wname (@wikiNames) {
+            if ( $tryName eq $wname ) {
+                Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+                    "Found matching $tryName for $_[0]->{email} ");
+                return $Foswiki::Plugins::SESSION->{users}
+                  ->getCanonicalUserID($tryName);
+            }
+        }
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "No exact match for $_[0]->{email}, using $wikiNames[0] ");
+        return $Foswiki::Plugins::SESSION->{users}
+          ->getCanonicalUserID( $wikiNames[0] )
+          ;    # Just return the first if none matched the github name
+    }
+
+    # Just try what we have for WikiName,
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+        "No email match for, using $tryName ");
+    return $Foswiki::Plugins::SESSION->{users}->getCanonicalUserID($tryName);
+
 }
 
 =tml
@@ -207,10 +307,10 @@ Applies the commit to the data form entry in the task.
 sub _updateTask {
     my $repository = shift;
     my $branch     = shift;
-    my $commitID   = shift;
+    my $commit     = shift;
     my $taskItem   = shift;
 
-    $commitID = substr( $commitID, 0, 12 );
+    my $commitID = substr( $commit->{id}, 0, 12 );
 
     unless (
         Foswiki::Func::topicExists(
@@ -228,25 +328,36 @@ sub _updateTask {
     my ( $meta, undef ) = Foswiki::Func::readTopic(
         $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}, $taskItem );
 
+    my $changed;
     foreach my $field ( 'Checkins', "${branch}Checkins" ) {
         my $formField = $meta->get( 'FIELD', $field );
         my $value;
         $value = $formField->{'value'} if ( defined $formField );
-        $value .= ' ' if $value;
-        $value .= "%GITREF{$repository:$commitID}%";
-        $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
+        unless ( $value && $value =~ m/\Q%GITREF{$repository:$commitID}%\E/ ) {
+            $changed = 1;
+            $value .= ' ' if $value;
+            $value .= "%GITREF{$repository:$commitID}%";
+            $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
+        }
     }
     my $formField = $meta->get( 'FIELD', 'CheckinsOnBranches' );
     my $value;
     $value = $formField->{'value'} if ( defined $formField );
-    unless ( $value =~ m/\b$branch\b/ ) {
+    unless ( $value =~ m/\b\Q$branch\E\b/ ) {
+        $changed = 1;
         $value .= ' ' if $value;
         $value .= $branch;
         $meta->putKeyed( 'FIELD',
             { name => 'CheckinsOnBranches', value => $value } );
     }
 
-    $meta->save();
+    if ($changed) {
+        my $cUID =
+             _findcUID( $commit->{'author'} )
+          || _findcUID( $commit->{'committer'} )
+          || 'ProjectContributor';
+        $meta->save( author => $cUID );
+    }
     return;
 }
 
@@ -261,7 +372,6 @@ git pull events for a local repository.
 =cut
 
 sub _logCommit {
-    my $delivery   = shift;
     my $repository = shift;
     my $branch     = shift;
     my $commit     = shift;
@@ -269,8 +379,8 @@ sub _logCommit {
 
     my $workPath;
     my $now = Foswiki::Time::formatTime( time(), 'iso', 'gmtime' );
-    my $message = "| $now | $delivery | $branch | $commit->{'id'} | "
-      . join( ',', @$tasklist ) . " |";
+    my $message =
+      "| $now |  $branch | $commit->{'id'} | " . join( ',', @$tasklist ) . " |";
 
     if ( $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea} ) {
         $workPath = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea};
