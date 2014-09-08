@@ -329,6 +329,26 @@ sub _updateTask {
         $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}, $taskItem );
 
     my $changed;
+
+    my $formField = $meta->get( 'FIELD', 'CheckinsOnBranches' );
+    my $value;
+    $value = $formField->{'value'} if ( defined $formField );
+    unless ( $value =~ m/\b\Q$branch\E\b/ ) {
+        $changed = 1;
+        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+            "Added $branch to CheckinsOnBranches for $taskItem");
+        $value .= ' ' if $value;
+        $value .= $branch;
+        $meta->putKeyed( 'FIELD',
+            { name => 'CheckinsOnBranches', value => $value } );
+    }
+
+# Adjust for Item specific branches.   The complete branch name was recorded in CheckinsOnBranches
+# but the individual commits are combined into 'ItemBranchCheckins'
+    if ( $branch =~ m/^(Item[0-9]{4,6})/ ) {
+        $branch = 'ItemBranch';
+    }
+
     foreach my $field ( 'Checkins', "${branch}Checkins" ) {
         my $formField = $meta->get( 'FIELD', $field );
         my $value;
@@ -341,18 +361,6 @@ sub _updateTask {
             $value .= "%GITREF{$repository:$commitID}%";
             $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
         }
-    }
-    my $formField = $meta->get( 'FIELD', 'CheckinsOnBranches' );
-    my $value;
-    $value = $formField->{'value'} if ( defined $formField );
-    unless ( $value =~ m/\b\Q$branch\E\b/ ) {
-        $changed = 1;
-        Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-            "Added $branch to CheckinsOnBranches for $taskItem");
-        $value .= ' ' if $value;
-        $value .= $branch;
-        $meta->putKeyed( 'FIELD',
-            { name => 'CheckinsOnBranches', value => $value } );
     }
 
     if ($changed) {
