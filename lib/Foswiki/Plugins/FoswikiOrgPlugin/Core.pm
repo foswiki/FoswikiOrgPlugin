@@ -333,7 +333,7 @@ sub _updateTask {
     my $formField = $meta->get( 'FIELD', 'CheckinsOnBranches' );
     my $value;
     $value = $formField->{'value'} if ( defined $formField );
-    unless ( $value =~ m/\b\Q$branch\E\b/ ) {
+    unless ( $value && $value =~ m/\b\Q$branch\E\b/ ) {
         $changed = 1;
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
             "Added $branch to CheckinsOnBranches for $taskItem");
