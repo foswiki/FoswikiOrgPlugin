@@ -19,14 +19,7 @@ sub initPlugin {
 
     # check for Plugins.pm versions, don't register REST handler
     # on older versions of Foswiki.
-    if ( $Foswiki::Plugins::VERSION < 2.3 ) {
-        Foswiki::Func::writeWarning(
-            'Version mismatch between ',
-            __PACKAGE__,
-            ' and Plugins.pm, skipping REST Handler'
-        );
-    }
-    else {
+    unless ( $Foswiki::Plugins::VERSION < 2.3 ) {
         Foswiki::Func::registerRESTHandler(
             'githubpush', \&_RESTgithubpush,
             validate => 0,    # No strikeone applicable
