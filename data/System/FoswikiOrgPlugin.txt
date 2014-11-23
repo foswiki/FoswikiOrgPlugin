@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1408579046" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1416784160" format="1.1" version="1"}%
 %META:TOPICPARENT{name="Plugins"}%
 <!--
 One line description, required for extensions repository catalog.
@@ -14,6 +14,8 @@ Implements Foswiki.org specific hooks and processing.
 
    * REST handler to update tasks from notification of push events.  Requires a secret key shared with http://github.com/
    * beforeSaveHandler eventually implements automatic security controls on Tasks.
+
+   * Install and update System.GitUserMap to map git users to Foswiki WikiNames.
 
 ---++ Preferences
 

@@ -1,5 +1,6 @@
 !noci
 data/System/FoswikiOrgPlugin.txt 0644 Documentation page
+data/System/GitUserMap.txt 0644 User mapping table
 lib/Foswiki/Plugins/FoswikiOrgPlugin.pm 0444 Perl module
 lib/Foswiki/Plugins/FoswikiOrgPlugin/Core.pm 0444 Perl module
 lib/Foswiki/Plugins/FoswikiOrgPlugin/Config.spec 0444 Configuration

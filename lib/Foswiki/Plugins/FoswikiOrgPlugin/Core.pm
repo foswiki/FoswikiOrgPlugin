@@ -209,6 +209,60 @@ sub _sendResponse {
 
 =tml
 
+---+++ _searchMapTable( $userHash ) -> $cUID
+
+Examines the "Author" or "Committer" hash from a github commit notification.
+Three fields are available.   github userid, email address,  and user name.
+
+Match the 3 components against entries in the Git map table.  Use the matching
+username on an exact match.
+
+Return undef if nothing found.
+
+=cut
+
+sub _searchMapTable {
+
+    # my $userHash = shift;
+    # $_[0]->{email}        # github email address
+    # $_[0]->{username}     # github userid
+    # $_[0]->{name}         # Full name used github registration
+
+    my $cUID;
+    my @wikiNames;
+
+    my $mapTopic = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GitUserMap}
+      || 'System.GitUserMap';
+    my ( $web, $topic ) = Foswiki::Func::normalizeWebTopicName( '', $mapTopic );
+    ( undef, my $maptable ) = Foswiki::Func::readTopic( $web, $topic );
+    my @map = $maptable =~ m/^\|\s*(.*?)$/msg;
+
+    foreach my $row (@map) {
+
+        my ( $name, $email, $username, $wikiname ) = split( /\s*\|\s*/, $row );
+
+        if (   $_[0]->{name}
+            && $_[0]->{name} eq $name
+            && $_[0]->{username}
+            && $_[0]->{username} eq $username
+            && $_[0]->{email}
+            && $_[0]->{email} eq $email )
+        {
+            my $cUID =
+              $Foswiki::Plugins::SESSION->{users}
+              ->getCanonicalUserID($wikiname);
+            Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+"_searchMapTable found $wikiname for $_[0]->{name}:$_[0]->{username}:$_[0]->{email} "
+            );
+            return $cUID;
+        }
+    }
+
+    return;
+}
+
+=tml
+
 ---+++ _findcUID( $userHash ) -> $cUID
 
 Examines the "Author" or "Committer" hash from a github commit notification.
@@ -242,7 +296,7 @@ sub _findcUID {
 
             # Single match - good
             Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-                "Found single $wikiNames[0] for $_[0]->{email} ");
+                "_findcUID: Found single $wikiNames[0] for $_[0]->{email} ");
 
 # SMELL: We should really use Func::getCanonicalUserID,  but it always returns an ID,
 # And we don't want to default to the logged in (ie guest) user if this fails.
@@ -277,13 +331,14 @@ sub _findcUID {
         foreach my $wname (@wikiNames) {
             if ( $tryName eq $wname ) {
                 Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-                    "Found matching $tryName for $_[0]->{email} ");
+                    "_findcUID: Found matching $tryName for $_[0]->{email} ");
                 return $Foswiki::Plugins::SESSION->{users}
                   ->getCanonicalUserID($tryName);
             }
         }
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-            "No exact match for $_[0]->{email}, using $wikiNames[0] ");
+            "_findcUID: No exact match for $_[0]->{email}, using $wikiNames[0] "
+        );
         return $Foswiki::Plugins::SESSION->{users}
           ->getCanonicalUserID( $wikiNames[0] )
           ;    # Just return the first if none matched the github name
@@ -291,7 +346,7 @@ sub _findcUID {
 
     # Just try what we have for WikiName,
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-        "No email match for, using $tryName ");
+        "_findcUID: No email match for, using $tryName ");
     return $Foswiki::Plugins::SESSION->{users}->getCanonicalUserID($tryName);
 
 }
@@ -367,6 +422,8 @@ sub _updateTask {
         my $cUID =
              _findcUID( $commit->{'author'} )
           || _findcUID( $commit->{'committer'} )
+          || _searchMapTable( $commit->{'author'} )
+          || _searchMapTable( $commit->{'committer'} )
           || 'ProjectContributor';
         my $newRev = $meta->save( author => $cUID );
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(

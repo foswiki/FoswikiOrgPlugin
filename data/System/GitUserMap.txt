@@ -1,0 +1,47 @@
+%META:TOPICINFO{author="ProjectContributor" date="1416784160" format="1.1" version="1"}%
+%META:TOPICPARENT{name="FoswikiOrgPlugin"}%
+---+!! !FoswikiOrg Plugin: Git User Mapping
+
+This topic implements an optional mapping of github account information to the
+WikiName of the committer/author.  When a "push" event occurs, the github
+account information is included in the push information
+
+---++ Identifying Information
+
+Two or three fields are provided on each push:
+
+   $ *"name"*: The name provided on the github user account. Typically this provide as "First Last", although older github accounts might use this as the username (see below),
+   $ *"email"*: The email address registered on the github user account.,
+   $ *"username"*: The github account userid.
+
+The information is provided in two blocks within the push.  ="Author"= and ="Committer"=.  The author information represents the original author of the commit.  This is
+obtained from information like a pull request.  The committer is the user who pushes the commit to the github repository.
+
+<div class="foswikiHelp">%T% Do not edit this topic directly. Copy it into your %USERSWEB% web, or to the web.topic identified in the configuration to activate it. *This topic can expose private / personal email addresses. It should be view restricted to the Main.AdminGroup or other trusted group*.</div> <verbatim>
+      "author": {
+        "name": "joe",
+        "email": "joe@foswiki.com",
+        "username": "joe123"
+      },
+      "committer": {
+        "name": "joe",
+        "email": "joe@foswiki.com",
+        "username": "joe123"
+      },</verbatim>
+
+---++ Mapping Table
+
+Fill in the name, email and username of the github account, along with the WikiName that
+should be attributed for the checkins in the Tasks web.
+When a push is receved,  the Author name, email and username, then Committer name, email and username are checked for a match in
+this table. The *exact match* will be used to assign the wikiname.
+
+<div class="foswikiHelp">Be sure this table saves as a TML table. Any line in
+this topic beginning with vertical bar will be considered as a table entry
+</div>
+
+The following example push would match the "committer" in the above example and assign the commit
+to !TheAuthor.
+
+| *name* | *email* | *username* | *WikiName* |
+| joe | joe@foswiki.com | joe123 | TheAuthor |

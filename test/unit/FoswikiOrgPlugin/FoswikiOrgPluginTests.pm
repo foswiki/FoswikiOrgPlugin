@@ -17,6 +17,11 @@ my $ItemBranchPayload =
 
 #'   # vim formatting messes up due to the long line.   This restores it.
 
+my $mapUserPayload =
+'{ "ref": "refs/heads/Item13010", "after": "ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "before": "0000000000000000000000000000000000000000", "created": true, "deleted": false, "forced": true, "compare": "https://github.com/foswiki/FastCGIEngineContrib/commit/ed689e67f129", "commits": [ { "id": "ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "distinct": true, "message": "Item13010:Item12909: fixes fcgi instabiltiy\n\n- when run under ProcManager\n- add a spec file as well\n- removed taint mode from respawned workers", "timestamp": "2014-08-29T14:49:50+02:00", "url": "https://github.com/foswiki/FastCGIEngineContrib/commit/ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "author": { "name": "joe", "email": "joe@foswiki.com", "username": "joe123" }, "committer": { "name": "blah", "email": "blah@foswiki.com", "username": "blah123" }, "added": [ ".gitignore", "lib/FCGI/ProcManager/Constrained.pm", "lib/Foswiki/Contrib/FastCGIEngineContrib/Config.spec" ], "removed": [ ], "modified": [ "bin/foswiki.fcgi", "data/System/FastCGIEngineContrib.txt", "lib/Foswiki/Contrib/FastCGIEngineContrib/MANIFEST", "lib/Foswiki/Engine/FastCGI.pm", "lib/Foswiki/Engine/FastCGI/ProcManager.pm", "tools/foswiki.defaults", "tools/foswiki.init-script" ] } ], "head_commit": { "id": "ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "distinct": true, "message": "Item13010:Item12909: fixes fcgi instabiltiy\n\n- when run under ProcManager\n- add a spec file as well\n- removed taint mode from respawned workers", "timestamp": "2014-08-29T14:49:50+02:00", "url": "https://github.com/foswiki/FastCGIEngineContrib/commit/ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "author": { "name": "joe", "email": "joe@foswiki.com", "username": "joe123" }, "committer": { "name": "blah", "email": "blah@foswiki.com", "username": "blah" }, "added": [ ".gitignore", "lib/FCGI/ProcManager/Constrained.pm", "lib/Foswiki/Contrib/FastCGIEngineContrib/Config.spec" ], "removed": [ ], "modified": [ "bin/foswiki.fcgi", "data/System/FastCGIEngineContrib.txt", "lib/Foswiki/Contrib/FastCGIEngineContrib/MANIFEST", "lib/Foswiki/Engine/FastCGI.pm", "lib/Foswiki/Engine/FastCGI/ProcManager.pm", "tools/foswiki.defaults", "tools/foswiki.init-script" ] }, "repository": { "id": 1229874, "name": "FastCGIEngineContrib", "full_name": "foswiki/FastCGIEngineContrib", "owner": { "name": "foswiki", "email": "foswiki-discuss@lists.sourceforge.net" }, "private": false, "html_url": "https://github.com/foswiki/FastCGIEngineContrib", "description": "Foswiki\'s FastCGIEngineContrib", "fork": false, "url": "https://github.com/foswiki/FastCGIEngineContrib", "forks_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/forks", "keys_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/keys{/key_id}", "collaborators_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/collaborators{/collaborator}", "teams_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/teams", "hooks_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/hooks", "issue_events_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/issues/events{/number}", "events_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/events", "assignees_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/assignees{/user}", "branches_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/branches{/branch}", "tags_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/tags", "blobs_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/git/blobs{/sha}", "git_tags_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/git/tags{/sha}", "git_refs_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/git/refs{/sha}", "trees_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/git/trees{/sha}", "statuses_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/statuses/{sha}", "languages_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/languages", "stargazers_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/stargazers", "contributors_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/contributors", "subscribers_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/subscribers", "subscription_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/subscription", "commits_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/commits{/sha}", "git_commits_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/git/commits{/sha}", "comments_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/comments{/number}", "issue_comment_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/issues/comments/{number}", "contents_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/contents/{+path}", "compare_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/compare/{base}...{head}", "merges_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/merges", "archive_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/{archive_format}{/ref}", "downloads_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/downloads", "issues_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/issues{/number}", "pulls_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/pulls{/number}", "milestones_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/milestones{/number}", "notifications_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/notifications{?since,all,participating}", "labels_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/labels{/name}", "releases_url": "https://api.github.com/repos/foswiki/FastCGIEngineContrib/releases{/id}", "created_at": 1294412229, "updated_at": "2014-08-09T03:50:32Z", "pushed_at": 1409316715, "git_url": "git://github.com/foswiki/FastCGIEngineContrib.git", "ssh_url": "git@github.com:foswiki/FastCGIEngineContrib.git", "clone_url": "https://github.com/foswiki/FastCGIEngineContrib.git", "svn_url": "https://github.com/foswiki/FastCGIEngineContrib", "homepage": "http://foswiki.org/Extensions/FastCGIEngineContrib", "size": 180, "stargazers_count": 1, "watchers_count": 1, "language": "Perl", "has_issues": false, "has_downloads": false, "has_wiki": false, "forks_count": 0, "mirror_url": null, "open_issues_count": 0, "forks": 0, "open_issues": 0, "watchers": 1, "default_branch": "master", "stargazers": 1, "master_branch": "master", "organization": "foswiki" }, "pusher": { "name": "TheAuthor", "email": "theauthor@foswiki.com" }, "ref_name": "Item13010", "distinct_commits": [ { "id": "ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "distinct": true, "message": "Item13010:Item12909: fixes fcgi instabiltiy\n\n- when run under ProcManager\n- add a spec file as well\n- removed taint mode from respawned workers", "timestamp": "2014-08-29T14:49:50+02:00", "url": "https://github.com/foswiki/FastCGIEngineContrib/commit/ed689e67f1299e8f4dac37e6ddd3f0eb398ae858", "author": { "name": "joe", "email": "joe@foswiki.com", "username": "joe123" }, "committer": { "name": "blah", "email": "blah@foswiki.com", "username": "blah" }, "added": [ ".gitignore", "lib/FCGI/ProcManager/Constrained.pm", "lib/Foswiki/Contrib/FastCGIEngineContrib/Config.spec" ], "removed": [ ], "modified": [ "bin/foswiki.fcgi", "data/System/FastCGIEngineContrib.txt", "lib/Foswiki/Contrib/FastCGIEngineContrib/MANIFEST", "lib/Foswiki/Engine/FastCGI.pm", "lib/Foswiki/Engine/FastCGI/ProcManager.pm", "tools/foswiki.defaults", "tools/foswiki.init-script" ] } ] }';
+
+#'   # vim formatting messes up due to the long line.   This restores it.
+
 sub new {
     my $self = shift()->SUPER::new(@_);
     return $self;
@@ -168,8 +173,9 @@ sub loadExtraConfig {
     $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GithubSecret} = 'asdfasdf';
     $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TrackingBranches} =
       qr/^(master|Release01x00|Release01x01|Release01x02|Item[0-9]{3,7}.*)$/;
-    $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea}      = '';
-    $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}      = $this->{test_web};
+    $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea}   = '';
+    $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb}   = $this->{test_web};
+    $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GitUserMap} = 'System.GitUserMap';
     $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{SecurityGroup} = 'SecurityGroup';
     $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{UpdateTasks}   = 1;
 }
@@ -205,6 +211,63 @@ sub test_processValidatedPayload {
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
     $value = $formField->{'value'};
     $this->assert_equals( 'Release01x01 trunk master', $value );
+}
+
+sub test_processValidatedPayload_mappedUser {
+    my $this = shift;
+
+    require Foswiki::Plugins::FoswikiOrgPlugin::Core;
+
+    Foswiki::Plugins::FoswikiOrgPlugin::Core::_processValidatedPayload(
+        $this->{session}, undef, undef, $mapUserPayload );
+
+    my $topicObject =
+      Foswiki::Meta->load( $this->{session}, $this->{test_web}, "Item13010" );
+
+    my $ti = $topicObject->get('TOPICINFO');
+    $this->assert_equals( 'TheAuthor', $ti->{author} );
+
+    my $formField = $topicObject->get( 'FIELD', 'masterCheckins' );
+    my $value = $formField->{'value'};
+    $this->assert_equals( '', $value );
+
+    $formField = $topicObject->get( 'FIELD', 'Checkins' );
+    $value = $formField->{'value'};
+    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+        $value );
+
+    $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
+    $value = $formField->{'value'};
+    $this->assert_equals( 'Item13010', $value );
+
+    $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
+    $value = $formField->{'value'};
+    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+        $value );
+
+    $topicObject =
+      Foswiki::Meta->load( $this->{session}, $this->{test_web}, "Item12909" );
+
+    $ti = $topicObject->get('TOPICINFO');
+    $this->assert_equals( 'TheAuthor', $ti->{author} );
+
+    $formField = $topicObject->get( 'FIELD', 'masterCheckins' );
+    $value = $formField->{'value'};
+    $this->assert( !defined $value );
+
+    $formField = $topicObject->get( 'FIELD', 'Checkins' );
+    $value = $formField->{'value'};
+    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+        $value );
+
+    $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
+    $value = $formField->{'value'};
+    $this->assert_equals( 'Item13010', $value );
+
+    $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
+    $value = $formField->{'value'};
+    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+        $value );
 }
 
 sub test_processValidatedPayload_ItemBranch {
