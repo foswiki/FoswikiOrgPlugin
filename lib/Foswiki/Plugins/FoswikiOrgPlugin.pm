@@ -9,8 +9,8 @@ use Foswiki::Func;
 
 use constant TRACE => 1;
 
-our $VERSION           = '1.01';
-our $RELEASE           = '1.01';
+our $VERSION           = '1.02';
+our $RELEASE           = '1.02';
 our $SHORTDESCRIPTION  = 'Adds github WebHook to accept push notifications';
 our $NO_PREFS_IN_TOPIC = 1;
 
