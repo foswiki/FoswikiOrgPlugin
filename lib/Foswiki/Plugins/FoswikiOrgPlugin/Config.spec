@@ -21,7 +21,7 @@ $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{TasksWeb} = 'Tasks';
 # Specify the Web.Topic used for the GitUserMap table..
 $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GitUserMap} = 'Development.GitUserMap';
 
-# **PATH**
+# **PATH CHECK="nullok"**
 # If provided, this overrides the normal working directory: 'foswiki/working/work_areas/FoswikiOrgPlugin'
 # If directory path does not exist it will be created.
 $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea} = '';
@@ -29,3 +29,4 @@ $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{Workarea} = '';
 # **STRING 20**
 # Specify the group name used for Security related tasks
 $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{SecurityGroup} = 'AdminGroup';
+1;
