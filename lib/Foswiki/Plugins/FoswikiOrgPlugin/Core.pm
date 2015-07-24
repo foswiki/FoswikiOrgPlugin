@@ -58,6 +58,7 @@ sub _githubPush {
     # Get the payload for processing
 
     my $payload = $query->param('POSTDATA');
+    $payload = Foswiki::encode_utf8($payload);
 
     unless ($payload) {
         _sendResponse( $response, 400,
