@@ -33,6 +33,7 @@ Configuration is done witin =bin/configure=.  See configure for documentation.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change&nbsp;History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.03 (2015-07-24): | Item13554: encode_utf8 the data from github |
 |  1.02 (2014-11-23): | Item13107: Add user map table |
 |  1.0 (2014-08-20): | Initial version |
 |  Home: | http://foswiki.org/Extensions/%TOPIC% |
