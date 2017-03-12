@@ -9,11 +9,26 @@ use Foswiki::Func;
 
 use constant TRACE => 1;
 
-our $VERSION = '1.04';
-our $RELEASE = '12 Mar 2017';
+our $VERSION = '1.05';
+our $RELEASE = '13 Mar 2017';
 our $SHORTDESCRIPTION =
   'Adds github WebHook and other utility functions for foswiki.org';
 our $NO_PREFS_IN_TOPIC = 1;
+
+my %revmap = (
+    '3705'  => '1.0.5',
+    '4272'  => '1.0.6',
+    '5061'  => '1.0.7',
+    '5668'  => '1.0.8',
+    '6075'  => '1.0.9',
+    '8969'  => '1.0.10',
+    '9498'  => '1.1.0',
+    '9743'  => '1.1.1',
+    '9940'  => '1.1.2',
+    '11475' => '1.1.3',
+    '13483' => '1.1.4',
+    '14595' => '1.1.5',
+);
 
 # Plugin init method, used to initialise handlers
 sub initPlugin {
@@ -57,12 +72,22 @@ sub _FoswikiAgentVersion {
     my $request = Foswiki::Func::getRequestObject();
     my $ua = $request->userAgent() || '';
 
-    if ( $ua =~ m#Foswiki::Net/V?([^\ _]+)#i ) {
-        return $1;
+    $ua =~ m#Foswiki::Net/V?([^\ _]+)#i;
+    my $fwver = $1;
+    return 'unknown' unless $fwver;    # Not a known agent format
+
+    # not dotted form, map from svn rev to version
+    if ( $fwver =~ m/^[0-9]{2,5}$/ ) {
+        return '1.0.0' if ( $fwver < 3705 );    # Give up, too old.
+        my $mapped = $revmap{$fwver};
+        unless ($mapped) {
+            return '1.0.5' if ( $fwver < 8969 );
+            return '1.1.0' if ( $fwver < 14595 );
+            return 'unknown';
+        }
+        return $mapped;
     }
-    else {
-        return 'unknown';
-    }
+    return $fwver;
 
 }
 ###############################################################################
