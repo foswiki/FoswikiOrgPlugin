@@ -72,9 +72,8 @@ sub _FoswikiAgentVersion {
     my $request = Foswiki::Func::getRequestObject();
     my $ua = $request->userAgent() || '';
 
-    $ua =~ m#Foswiki::Net/V?([^\ _]+)#i;
+    return 'unknown' unless ( $ua =~ m#Foswiki::Net/V?([^\ _]+)#i );
     my $fwver = $1;
-    return 'unknown' unless $fwver;    # Not a known agent format
 
     # not dotted form, map from svn rev to version
     if ( $fwver =~ m/^[0-9]{2,5}$/ ) {
