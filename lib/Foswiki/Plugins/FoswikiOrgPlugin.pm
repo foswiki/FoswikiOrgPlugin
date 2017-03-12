@@ -9,9 +9,10 @@ use Foswiki::Func;
 
 use constant TRACE => 1;
 
-our $VERSION           = '1.03';
-our $RELEASE           = '1.03';
-our $SHORTDESCRIPTION  = 'Adds github WebHook to accept push notifications';
+our $VERSION = '1.04';
+our $RELEASE = '12 Mar 2017';
+our $SHORTDESCRIPTION =
+  'Adds github WebHook and other utility functions for foswiki.org';
 our $NO_PREFS_IN_TOPIC = 1;
 
 # Plugin init method, used to initialise handlers
@@ -31,6 +32,10 @@ sub initPlugin {
         );
     }
 
+  # Register the _FoswikiAgentVersion function to handle %FOSWIKIREQUESTAGENT{}%
+    Foswiki::Func::registerTagHandler( 'FOSWIKIREQUESTAGENT',
+        \&_FoswikiAgentVersion );
+
     return 1;
 }
 
@@ -45,6 +50,21 @@ sub _RESTgithubpush {
 
 }
 
+sub _FoswikiAgentVersion {
+
+    #    my($session, $params, $topic, $web, $topicObject) = @_;
+
+    my $request = Foswiki::Func::getRequestObject();
+    my $ua = $request->userAgent() || '';
+
+    if ( $ua =~ m#Foswiki::Net/V?([^\ _]+)#i ) {
+        return $1;
+    }
+    else {
+        return 'unknown';
+    }
+
+}
 ###############################################################################
 sub writeDebug {
     return unless TRACE;

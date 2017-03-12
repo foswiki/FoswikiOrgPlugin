@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1416784160" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1489351300" format="1.1" version="1"}%
 %META:TOPICPARENT{name="Plugins"}%
 <!--
 One line description, required for extensions repository catalog.
@@ -33,6 +33,7 @@ Configuration is done witin =bin/configure=.  See configure for documentation.
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change&nbsp;History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.04 (2017-03-12): | Item14340: Add macro to extract the Foswiki version from the Foswiki::Net user agent string. |
 |  1.03 (2015-07-24): | Item13554: encode_utf8 the data from github |
 |  1.02 (2014-11-23): | Item13107: Add user map table |
 |  1.0 (2014-08-20): | Initial version |
