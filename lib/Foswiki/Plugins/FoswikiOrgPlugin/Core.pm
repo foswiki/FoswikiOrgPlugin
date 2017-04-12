@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Foswiki::Plugins::FoswikiOrgPlugin;
+use Data::Dumper;
 
 use Digest::HMAC_SHA1 qw( hmac_sha1_hex );
 use JSON qw( decode_json );
@@ -238,16 +239,19 @@ sub _searchMapTable {
     ( undef, my $maptable ) = Foswiki::Func::readTopic( $web, $topic );
     my @map = $maptable =~ m/^\|\s*(.*?)$/msg;
 
+    print STDERR "Map Table " . Data::Dumper::Dumper( \@map );
+
     foreach my $row (@map) {
 
         my ( $name, $email, $username, $wikiname ) = split( /\s*\|\s*/, $row );
 
-        if (   $_[0]->{name}
-            && $_[0]->{name} eq $name
-            && $_[0]->{username}
-            && $_[0]->{username} eq $username
-            && $_[0]->{email}
-            && $_[0]->{email} eq $email )
+        if (
+            ( $_[0]->{name} && $_[0]->{name} eq $name )
+            || (   $_[0]->{username}
+                && $_[0]->{username} eq $username )
+            || (   $_[0]->{email}
+                && $_[0]->{email} eq $email )
+          )
         {
             my $cUID =
               $Foswiki::Plugins::SESSION->{users}
@@ -258,6 +262,10 @@ sub _searchMapTable {
             return $cUID;
         }
     }
+
+    Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
+"_searchMapTable failed for $_[0]->{name}:$_[0]->{username}:$_[0]->{email} "
+    );
 
     return;
 }
@@ -418,6 +426,10 @@ sub _updateTask {
             $meta->putKeyed( 'FIELD', { name => $field, value => $value } );
         }
     }
+
+    #DEBUG:
+    print STDERR Data::Dumper::Dumper( \$commit->{'author'} );
+    print STDERR Data::Dumper::Dumper( \$commit->{'committer'} );
 
     if ($changed) {
         my $cUID =
