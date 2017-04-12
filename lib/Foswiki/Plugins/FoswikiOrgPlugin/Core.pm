@@ -431,13 +431,13 @@ sub _updateTask {
     print STDERR Data::Dumper::Dumper( \$commit->{'author'} );
     print STDERR Data::Dumper::Dumper( \$commit->{'committer'} );
 
+    my $cUID =
+         _findcUID( $commit->{'author'} )
+      || _findcUID( $commit->{'committer'} )
+      || _searchMapTable( $commit->{'author'} )
+      || _searchMapTable( $commit->{'committer'} )
+      || 'ProjectContributor';
     if ($changed) {
-        my $cUID =
-             _findcUID( $commit->{'author'} )
-          || _findcUID( $commit->{'committer'} )
-          || _searchMapTable( $commit->{'author'} )
-          || _searchMapTable( $commit->{'committer'} )
-          || 'ProjectContributor';
         my $newRev = $meta->save( author => $cUID );
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
             "Saved r$newRev of $taskItem");
