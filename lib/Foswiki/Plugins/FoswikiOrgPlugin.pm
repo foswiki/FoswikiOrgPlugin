@@ -9,8 +9,8 @@ use Foswiki::Func;
 
 use constant TRACE => 1;
 
-our $VERSION = '1.05';
-our $RELEASE = '13 Mar 2017';
+our $VERSION = '1.06';
+our $RELEASE = '11 Apr 2017';
 our $SHORTDESCRIPTION =
   'Adds github WebHook and other utility functions for foswiki.org';
 our $NO_PREFS_IN_TOPIC = 1;

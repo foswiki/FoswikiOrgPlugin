@@ -81,7 +81,6 @@ sub _githubPush {
         _sendResponse( $response, 403,
 'ERROR: (403) Invalid REST invocation: X-Hub-Signature does not match payload signature, request forbidden'
         );
-        use Data::Dumper;
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
             Data::Dumper::Dumper( \$query ) );
         return undef;
@@ -103,7 +102,6 @@ sub _processValidatedPayload {
         _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: Unable to decode JSON from the POSTDATA, request rejected.'
         );
-        use Data::Dumper;
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
             Data::Dumper::Dumper( \$query ) );
         return undef;
@@ -121,7 +119,6 @@ sub _processValidatedPayload {
         _sendResponse( $response, 400,
 'ERROR: (400) Invalid REST invocation: No git \'ref\' found in message, Unable to determine branch. request rejected..'
         );
-        use Data::Dumper;
         Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
             Data::Dumper::Dumper( \$query ) );
         return undef;
@@ -239,19 +236,18 @@ sub _searchMapTable {
     ( undef, my $maptable ) = Foswiki::Func::readTopic( $web, $topic );
     my @map = $maptable =~ m/^\|\s*(.*?)$/msg;
 
-    print STDERR "Map Table " . Data::Dumper::Dumper( \@map );
+    #print STDERR "Map Table " . Data::Dumper::Dumper( \@map );
 
     foreach my $row (@map) {
 
         my ( $name, $email, $username, $wikiname ) = split( /\s*\|\s*/, $row );
 
-        if (
-            ( $_[0]->{name} && $_[0]->{name} eq $name )
-            || (   $_[0]->{username}
-                && $_[0]->{username} eq $username )
-            || (   $_[0]->{email}
-                && $_[0]->{email} eq $email )
-          )
+        if (   $_[0]->{name}
+            && $_[0]->{name} eq $name
+            && $_[0]->{username}
+            && $_[0]->{username} eq $username
+            && $_[0]->{email}
+            && $_[0]->{email} eq $email )
         {
             my $cUID =
               $Foswiki::Plugins::SESSION->{users}
@@ -355,7 +351,7 @@ sub _findcUID {
 
     # Just try what we have for WikiName,
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-        "_findcUID: No email match for, using $tryName ");
+        "_findcUID: No email match for $_[0]->{email}, using $tryName ");
     return $Foswiki::Plugins::SESSION->{users}->getCanonicalUserID($tryName);
 
 }
@@ -428,8 +424,8 @@ sub _updateTask {
     }
 
     #DEBUG:
-    print STDERR Data::Dumper::Dumper( \$commit->{'author'} );
-    print STDERR Data::Dumper::Dumper( \$commit->{'committer'} );
+    #print STDERR Data::Dumper::Dumper( \$commit->{'author'} );
+    #print STDERR Data::Dumper::Dumper( \$commit->{'committer'} );
 
     my $cUID =
          _findcUID( $commit->{'author'} )
