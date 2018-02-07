@@ -206,7 +206,7 @@ sub test_processValidatedPayload {
 
     $formField = $topicObject->get( 'FIELD', 'Checkins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{distro:deadbeefdead}%/, $value );
+    $this->assert_matches( qr/%GITREF\{distro:deadbeefdead\}%/, $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
     $value = $formField->{'value'};
@@ -233,7 +233,7 @@ sub test_processValidatedPayload_mappedUser {
 
     $formField = $topicObject->get( 'FIELD', 'Checkins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
@@ -242,7 +242,7 @@ sub test_processValidatedPayload_mappedUser {
 
     $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $topicObject =
@@ -257,7 +257,7 @@ sub test_processValidatedPayload_mappedUser {
 
     $formField = $topicObject->get( 'FIELD', 'Checkins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
@@ -266,7 +266,7 @@ sub test_processValidatedPayload_mappedUser {
 
     $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 }
 
@@ -290,7 +290,7 @@ sub test_processValidatedPayload_ItemBranch {
 
     $formField = $topicObject->get( 'FIELD', 'Checkins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
@@ -299,7 +299,7 @@ sub test_processValidatedPayload_ItemBranch {
 
     $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $topicObject =
@@ -314,7 +314,7 @@ sub test_processValidatedPayload_ItemBranch {
 
     $formField = $topicObject->get( 'FIELD', 'Checkins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
@@ -323,7 +323,7 @@ sub test_processValidatedPayload_ItemBranch {
 
     $formField = $topicObject->get( 'FIELD', 'ItemBranchCheckins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{FastCGIEngineContrib:ed689e67f129}%/,
+    $this->assert_matches( qr/%GITREF\{FastCGIEngineContrib:ed689e67f129\}%/,
         $value );
 }
 
@@ -358,7 +358,7 @@ sub test_update_Task {
 
     $formField = $topicObject->get( 'FIELD', 'masterCheckins' );
     $value = $formField->{'value'};
-    $this->assert_matches( qr/%GITREF{distro:deadbeefdead}%/, $value );
+    $this->assert_matches( qr/%GITREF\{distro:deadbeefdead\}%/, $value );
 
     $formField = $topicObject->get( 'FIELD', 'CheckinsOnBranches' );
     $value = $formField->{'value'};

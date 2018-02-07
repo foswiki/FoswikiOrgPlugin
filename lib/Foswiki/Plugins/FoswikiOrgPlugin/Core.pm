@@ -230,6 +230,10 @@ sub _searchMapTable {
     my $cUID;
     my @wikiNames;
 
+    my $commitEmail    = $_[0]->{email}    // 'undef';
+    my $commitUsername = $_[0]->{username} // 'undef';
+    my $commitName     = $_[0]->{name}     // 'undef';
+
     my $mapTopic = $Foswiki::cfg{Plugins}{FoswikiOrgPlugin}{GitUserMap}
       || 'System.GitUserMap';
     my ( $web, $topic ) = Foswiki::Func::normalizeWebTopicName( '', $mapTopic );
@@ -242,28 +246,25 @@ sub _searchMapTable {
 
         my ( $name, $email, $username, $wikiname ) = split( /\s*\|\s*/, $row );
 
-        if (   $_[0]->{name}
-            && $_[0]->{name} eq $name
-            && $_[0]->{username}
-            && $_[0]->{username} eq $username
-            && $_[0]->{email}
-            && $_[0]->{email} eq $email )
+        if (   $commitName eq $name
+            && $commitUsername eq $username
+            && $commitEmail eq $email )
         {
             my $cUID =
               $Foswiki::Plugins::SESSION->{users}
               ->getCanonicalUserID($wikiname);
             Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-"_searchMapTable found $wikiname for $_[0]->{name}:$_[0]->{username}:$_[0]->{email} "
+"_searchMapTable found $wikiname for $commitName:$commitUsername:$commitEmail "
             );
             return $cUID;
         }
     }
 
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-"_searchMapTable failed for $_[0]->{name}:$_[0]->{username}:$_[0]->{email} "
+        "_searchMapTable failed for $commitName:$commitUsername:$commitEmail "
     );
 
-    return;
+    return '';
 }
 
 =tml
@@ -351,7 +352,8 @@ sub _findcUID {
 
     # Just try what we have for WikiName,
     Foswiki::Plugins::FoswikiOrgPlugin::writeDebug(
-        "_findcUID: No email match for $_[0]->{email}, using $tryName ");
+        "_findcUID: No email match for $_[0]->{email}, using $tryName ")
+      if ( defined $_[0]->{email} );
     return $Foswiki::Plugins::SESSION->{users}->getCanonicalUserID($tryName);
 
 }
