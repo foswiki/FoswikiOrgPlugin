@@ -9,8 +9,8 @@ use Foswiki::Func;
 
 use constant TRACE => 1;
 
-our $VERSION = '1.06';
-our $RELEASE = '11 Apr 2017';
+our $VERSION = '1.07';
+our $RELEASE = '06 Feb 2018';
 our $SHORTDESCRIPTION =
   'Adds github WebHook and other utility functions for foswiki.org';
 our $NO_PREFS_IN_TOPIC = 1;
@@ -120,7 +120,7 @@ sub beforeSaveHandler {
 __END__
 Foswiki - The Free and Open Source Wiki, http://foswiki.org/
 
-Copyright (C) 2008-2014 Foswiki Contributors. Foswiki Contributors
+Copyright (C) 2008-2018 Foswiki Contributors. Foswiki Contributors
 are listed in the AUTHORS file in the root of this distribution.
 NOTE: Please extend that file, not this notice.
 

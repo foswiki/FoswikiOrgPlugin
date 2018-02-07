@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1416784160" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1517973245" format="1.1" version="1"}%
 %META:TOPICPARENT{name="FoswikiOrgPlugin"}%
 ---+!! !FoswikiOrg Plugin: Git User Mapping
 
@@ -24,9 +24,8 @@ obtained from information like a pull request.  The committer is the user who pu
         "username": "joe123"
       },
       "committer": {
-        "name": "joe",
-        "email": "joe@foswiki.com",
-        "username": "joe123"
+        "name": "Weblate",
+        "email": "weblate@foswiki.org",
       },</verbatim>
 
 ---++ Mapping Table
@@ -36,12 +35,18 @@ should be attributed for the checkins in the Tasks web.
 When a push is receved,  the Author name, email and username, then Committer name, email and username are checked for a match in
 this table. The *exact match* will be used to assign the wikiname.
 
+To map an entry when the github push is missing an entry, create a mapping
+entry using the string 'undef' in place of the =name=, =email= and/or =username=
+fields.
+
 <div class="foswikiHelp">Be sure this table saves as a TML table. Any line in
 this topic beginning with vertical bar will be considered as a table entry
 </div>
 
-The following example push would match the "committer" in the above example and assign the commit
-to !TheAuthor.
+The following example push would match the "author" in the above example and assign the commit
+to !TheAuthor.  The 2nd line would match the committer, however the committer
+is only examined if the author field cannot be resolved.
 
 | *name* | *email* | *username* | *WikiName* |
 | joe | joe@foswiki.com | joe123 | TheAuthor |
+| Weblate | weblate@foswiki.org | undef | WikiTranslationGnome |

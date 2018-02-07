@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1489351300" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1517973245" format="1.1" version="1"}%
 %META:TOPICPARENT{name="Plugins"}%
 <!--
 One line description, required for extensions repository catalog.
@@ -27,12 +27,14 @@ Configuration is done witin =bin/configure=.  See configure for documentation.
 ---++ Info
 
 |  Author: | GeorgeClark |
-|  Copyright: | 2014, ProjectContributor, All Rights Reserved |
+|  Copyright: | 2014-2018, ProjectContributor, All Rights Reserved |
 |  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Version: | %$VERSION% |
 |  Release: | %$RELEASE% |
 |  Change&nbsp;History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.07 (2018-02-06): | Item14621: Handle undefined entries in the author/committer fields. |
+|  1.06 (2017-04-11): | Item14340: Remove some extraneous debug printing. |
 |  1.05 (2017-03-13): | Item14340: Add mappings for old svn based releases. |
 |  1.04 (2017-03-12): | Item14340: Add macro to extract the Foswiki version from the Foswiki::Net user agent string. |
 |  1.03 (2015-07-24): | Item13554: encode_utf8 the data from github |
